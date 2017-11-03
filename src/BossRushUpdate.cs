@@ -92,7 +92,7 @@ namespace BossRush
                         if (PlayerData.instance.gotCharm_3)
                             BossRush.onPickup("gotCharm_3", true);
 
-                        if (BossRush.getCurrentItemValue(0) || BossRush.getCurrentItemValue(1) || BossRush.getCurrentItemValue(2))
+                        if (BossRush.pickups > (BossRush.flawless ? 1 : 0))
                         {
                             BossRush.currentBoss++;
                             spawnedItems = false;

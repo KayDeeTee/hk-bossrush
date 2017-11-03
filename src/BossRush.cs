@@ -5,42 +5,43 @@ using Modding;
 using GlobalEnums;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Drawing;
+using BossRush.Properties;
+using UnityEngine.UI;
 
 namespace BossRush
 {
     public class BossRush : Mod
     {
-        private static string version = "0.2.7";
+        private static string version = "0.3.3";
         public override string GetVersion()
         {
             return version;
         }
 
+        public static Texture2D bgTex;
+        public static GameObject canvas;
         public static GameObject battleScene;
         public static PlayMakerFSM[] bsComponents;
+        public static UnityEngine.UI.Image bgImg;
 
-        public static int grimmLevel = 0;
-        public static int oldGrimmLevel = 0;
+        public static int grimmLevel, oldGrimmLevel = 0;
 
         public static BossData[] bossData;
         public static int currentBoss;
- 
+
+        public static GameObject shiny;
         public static GameManager gm;
         public static HeroController hc;
 
         public static List<string> items;
 
-        public static int fireballLevel = 0;
-        public static int quakeLevel = 0;
-        public static int screamLevel = 0;
-
-        public static int hp;
-        public static int mp;
-        public static int nail;
-
+        public static int fireballLevel, quakeLevel, screamLevel = 0;
+        public static int hp, mp, nail;
         public static bool hasDash;
 
-        public static GameObject shiny;
+        public static int pickups = 0;
+        public static bool flawless;
 
         public static bool bossKilled(){
             if (bossData[currentBoss].killedVar == "Battle Scene")
@@ -79,8 +80,6 @@ namespace BossRush
                 return "HP";
             if (b == "mpLevel")
                 return "MP";
-            if (b == "grimmChild")
-                return "Grimmchild Lv+";
             //TODO: Language Specific 
             if (b == "nailLevel")
                 return "Nail";
@@ -96,6 +95,8 @@ namespace BossRush
                 return "Monarch Wings";
             if (b == "hasWallJump")
                 return "Mantis Claw";
+            if (b == "grimmChild")
+                return "Grimmchild Lv+";
             ModHooks.ModLog("[Boss Rush] Unknown Item: " + b);
             return "???";
         }
@@ -131,6 +132,8 @@ namespace BossRush
                 return grimmLevel > oldGrimmLevel;
             if (pdbool == "hasDash")
                 return hasDash ? PlayerData.instance.hasShadowDash : PlayerData.instance.hasDash;
+            if (pdbool == "hasWallJump")
+                return PlayerData.instance.hasWalljump;
             if (pdbool == "hpLevel")
                 return PlayerData.instance.maxHealthBase > hp;
             if (pdbool == "mpLevel")
@@ -160,8 +163,11 @@ namespace BossRush
                     PlayerData.instance.SetIntInternal("charmCost_" + i, 0);
                 }
             }
-
+            bgImg.enabled = true;
             battleScene = null;
+
+            pickups = 0;
+            flawless = true;
 
             PlayerData.instance.equippedCharm_40 = true;
 
@@ -205,6 +211,8 @@ namespace BossRush
 
             PlayerData.instance.MaxHealth();
             HeroController.instance.CharmUpdate();
+            PlayerData.instance.UpdateBlueHealth();
+            PlayMakerFSM.BroadcastEvent("UPDATE BLUE HEALTH");
 
             //VVV TELEPORT CODE VVV
 
@@ -236,16 +244,16 @@ namespace BossRush
                 //CG1 TODO: Bench can cause softlocks
                 new BossData("CG1", "Mines_18", new Vector2(30.07801f, 11.40562f), createDrops(), new ItemPos(), "killedMegaBeamMiner"),
                 new BossData("Brooding Mawlek", "Crossroads_09", new Vector2(53.35388f, 4.405625f), createDrops(), new ItemPos(57, 66, 6), "killedMawlek"),
-                new BossData("Flukemarm", "Waterways_12", new Vector2(27.38424f, 5.405624f), createDrops(), new ItemPos(23f, 31f, 5.6f), "flukeMotherDefeated"),
-                new BossData("Nosk", "Deepnest_32", new Vector2(75.87415f, 4.405625f), createDrops(), new ItemPos(90.3f, 101.7f, 7.5f), "killedMimicSpider"),
 	            new BossData("Watcher Knights", "Ruins2_03", new Vector2(44.2238f, 70.40561f), createDrops(), new ItemPos(), "killedBlackKnight"),                
 	            new BossData("Dung Defender", "Waterways_05", new Vector2(83.09189f, 7.405624f), createDrops(), new ItemPos(), "defeatedDungDefender"),
                 //Grimm TODO: Try and skip conversation and just start fight instantly
                 new BossData("Grimm", "Grimm_Main_Tent", new Vector2(95.12892f, 6.405625f), createDrops(), new ItemPos(85, 95, 7), "killedGrimm"),
+                new BossData("Nosk", "Deepnest_32", new Vector2(75.87415f, 4.405625f), createDrops(), new ItemPos(90.3f, 101.7f, 7.5f), "killedMimicSpider"),
 	            new BossData("Uumuu", "Fungus3_archive_02", new Vector2(53.54183f, 110.4056f), createDrops(), new ItemPos(50, 56, 111), "defeatedMegaJelly"),
+                new BossData("Flukemarm", "Waterways_12", new Vector2(27.38424f, 5.405624f), createDrops(), new ItemPos(23f, 31f, 5.6f), "flukeMotherDefeated"),
 	            new BossData("Collector", "Ruins2_11", new Vector2(47.50203f, 95.40561f), createDrops(), new ItemPos(), "collectorDefeated"),
                 new BossData("CG2", "Mines_32", new Vector2(37.01696f, 11.40562f), createDrops(), new ItemPos(), "Battle Scene"),
-	            new BossData("Traitor Lord", "Fungus3_23", new Vector2(33.74541f, 29.40562f), createDrops(), new ItemPos(), "killedTraitorLord"),
+	            new BossData("Traitor Lord", "Fungus3_23", new Vector2(33.74541f, 29.40562f), createDrops(), new ItemPos(25,35,31), "killedTraitorLord"),
 	            new BossData("Hornet2", "Deepnest_East_Hornet", new Vector2(24.43399f, 28.40562f), createDrops(), new ItemPos(), "hornetOutskirtsDefeated"),
 	            new BossData("Broken Vessel", "Abyss_19", new Vector2(24.92674f, 28.40562f), createDrops(), new ItemPos(), "killedInfectedKnight"),
                 new BossData("Lost Kin", "Dream_03_Infected_Knight", new Vector2(44.98343f, 28.40562f), createDrops(), new ItemPos(), "infectedKnightDreamDefeated"),
@@ -264,6 +272,34 @@ namespace BossRush
         {
             ModHooks.ModLog("Initializing BossRush");
 
+            byte[] bg = ResourceLoader.loadBackground();
+            bgTex = new Texture2D(1280, 720);
+            bgTex.LoadImage(bg);
+
+            canvas = new GameObject();
+            canvas.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+            CanvasScaler cs = canvas.AddComponent<CanvasScaler>();
+            cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            cs.referenceResolution = new Vector2(1280, 720);
+            canvas.AddComponent<GraphicRaycaster>();
+
+            GameObject panel = new GameObject();
+            panel.transform.parent = canvas.transform;
+            panel.AddComponent<CanvasRenderer>();
+            RectTransform rt = panel.AddComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(1280, 720);
+            rt.anchorMax = new Vector2(0, 0);
+            rt.anchorMin = new Vector2(0, 0);
+            rt.anchoredPosition = new Vector2(640, 360);
+            bgImg = panel.AddComponent<UnityEngine.UI.Image>();
+            bgImg.sprite = Sprite.Create(bgTex, new Rect(0, 0, 1280, 720), Vector2.zero);
+
+            GameObject.DontDestroyOnLoad(canvas);
+            GameObject.DontDestroyOnLoad(bgImg);
+
+            bgImg.enabled = false;
+
+            
             items = new List<string>();
 
             for (int i = 4; i < 40; i++)
@@ -288,12 +324,22 @@ namespace BossRush
 
             ModHooks.Instance.ColliderCreateHook += onCollider;
             ModHooks.Instance.NewGameHook += resetData;
+            ModHooks.Instance.TakeDamageHook += tookDamage;
 
             ModHooks.ModLog("Initialized BossRush");
         }
 
+        public int tookDamage(ref int type, int d)
+        {
+            flawless = false;
+            return d;
+        }
+
         public void onSceneLoad(Scene dst, LoadSceneMode lsm)
         {
+            HeroController.instance.RegainControl();
+            HeroController.instance.cState.Reset();
+            bgImg.enabled = false;
             RemoveTransitions();
         }
 
@@ -424,6 +470,26 @@ namespace BossRush
             HeroController.instance.CharmUpdate();
 
             PlayMakerFSM.BroadcastEvent("UPDATE NAIL DAMAGE");
+
+            if (pdbool == "gotCharm_13")
+            {
+                hc.normalSlash.SetMantis(true);
+                hc.alternateSlash.SetMantis(true);
+                hc.upSlash.SetMantis(true);
+                hc.downSlash.SetMantis(true);
+                hc.wallSlash.SetMantis(true);
+            }
+
+            if (pdbool == "gotCharm_18")
+            {
+                hc.normalSlash.SetLongnail(true);
+                hc.alternateSlash.SetLongnail(true);
+                hc.upSlash.SetLongnail(true);
+                hc.downSlash.SetLongnail(true);
+                hc.wallSlash.SetLongnail(true);
+            }
+
+            pickups++;
 
             PlayerData.instance.gotCharm_1 = false;
             PlayerData.instance.gotCharm_2 = false;
