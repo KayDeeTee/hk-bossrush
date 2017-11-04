@@ -61,10 +61,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BossData.cs" />
+    <Compile Include="BossInfo.cs" />
     <Compile Include="BossRushUpdate.cs" />
     <Compile Include="FsmUtil.cs" />
-    <Compile Include="ItemPos.cs" />
+    <Compile Include="ItemData.cs" />
+    <Compile Include="ItemHandler.cs" />
+    <Compile Include="ItemInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
