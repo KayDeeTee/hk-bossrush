@@ -28,19 +28,9 @@ namespace BossRush
             id = _id;
         }
 
-        public void updateText()
+        public void destroy()
         {
-            SetTextMeshProGameText[] textMeshPro = shiny.GetComponentsInChildren<SetTextMeshProGameText>();
-            foreach (SetTextMeshProGameText tmp in textMeshPro)
-            {
-                tmp.gameObject.AddComponent<SetInspectText>().id = id;
-                Destroy(tmp);
-            }
-            SetInspectText[] sits = shiny.GetComponentsInChildren<SetInspectText>();
-            foreach (SetInspectText sit in sits)
-            {
-                sit.id = id;
-            }
+            Destroy(shiny);
         }
 
         public string getExternName()
@@ -65,6 +55,24 @@ namespace BossRush
                 ItemInfo.upgrades[varName] = 0;
             ItemInfo.upgrades[varName]++;
             BossRush.pickups++;
+            if (varName == "grimmChildLevel")
+                BossRush.grimmLevel++;
+            if (varName == "equippedCharm_13")
+            {
+                BossRush.hc.normalSlash.SetMantis(true);
+                BossRush.hc.alternateSlash.SetMantis(true);
+                BossRush.hc.upSlash.SetMantis(true);
+                BossRush.hc.downSlash.SetMantis(true);
+                BossRush.hc.wallSlash.SetMantis(true);
+            }
+            if (varName == "equippedCharm_18")
+            {
+                BossRush.hc.normalSlash.SetLongnail(true);
+                BossRush.hc.alternateSlash.SetLongnail(true);
+                BossRush.hc.upSlash.SetLongnail(true);
+                BossRush.hc.downSlash.SetLongnail(true);
+                BossRush.hc.wallSlash.SetLongnail(true);
+            }
             if (varName == "maxHealth" || varName == "maxMp")
             {
                 if (varName == "maxHealth")
@@ -92,8 +100,21 @@ namespace BossRush
 
         public void Spawn()
         {
-            shiny = Instantiate(BossRush.shiny);
-
+            if (shiny == null)
+            {
+                if (id == 0)
+                {
+                    shiny = Instantiate(BossRush.shinySlot1);
+                }
+                if (id == 1)
+                {
+                    shiny = Instantiate(BossRush.shinySlot2);
+                }
+                if (id == 2)
+                {
+                    shiny = Instantiate(BossRush.shinySlot3);
+                }
+            }
             if (position.x < -900)
                 shiny.transform.position = new Vector2((BossRush.hc.transform.position.x + (id == 1 ? -2.75f : 0) + (id == 2 ? 2.75f : 0)), BossRush.hc.transform.position.y);
             else
@@ -102,7 +123,7 @@ namespace BossRush
             shinyFSM.FsmVariables.GetFsmInt("Trinket Num").Value = id+1;
             FsmUtil.ChangeTransition(shinyFSM, "PD Bool?", "COLLECTED", "Fling?");
 
-            updateText();
+            shiny.name = "ITEM_"+id;
         }
 
     }

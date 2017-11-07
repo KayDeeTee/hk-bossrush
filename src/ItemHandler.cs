@@ -38,21 +38,21 @@ namespace BossRush
             itemData[i].activate();
         }
 
-        public void updateText()
+        public void DestroyAll()
         {
-            itemData[0].updateText();
-            itemData[1].updateText();
-            itemData[2].updateText();
+            itemData[0].destroy();
+            itemData[1].destroy();
+            itemData[2].destroy();
         }
 
         public bool SpawnAll()
         {
-            if (BossRush.shiny != null)
+            if (BossRush.shinySlot3 != null)
             {
                 itemData[0].Spawn();
                 itemData[1].Spawn();
                 itemData[2].Spawn();
-                updateText();
+                //updateText();
                 return true;
             }
             return false;

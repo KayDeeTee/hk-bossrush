@@ -36,6 +36,26 @@ namespace FsmUtils
             }
         }
 
+        public static void LogFSM(PlayMakerFSM fsm){
+
+            foreach (FsmState state in fsm.FsmStates)
+            {
+                Modding.ModHooks.ModLog(state.Name);
+                //└
+                foreach (FsmStateAction action in state.Actions)
+                {
+                    Modding.ModHooks.ModLog("└" + action.GetType());
+                    FieldInfo[] propInfo = action.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    for (int i = 0; i < propInfo.Length; i++)
+                    {
+                        Modding.ModHooks.ModLog(" └[" + i + "](" + propInfo[i].FieldType + ")" + propInfo[i].Name + " = " + propInfo[i].GetValue(action));
+                    }
+                }
+
+            }
+        
+        }
+
         public static void RemoveAction(PlayMakerFSM fsm, string stateName, int index)
         {
             for (int i = 0; i < fsm.FsmStates.Length; i++)

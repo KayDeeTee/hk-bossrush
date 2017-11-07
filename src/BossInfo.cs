@@ -52,16 +52,16 @@ namespace BossRush
 
         public static void assignItems()
         {
-            if (ItemInfo.itemInfo.Count < 3)
-            {
-                ItemInfo.itemInfo.AddRange(ItemInfo.unusedItems);
-                ItemInfo.unusedItems.Clear();
-            }
-            bossInfo[bossOrder[currentBoss]].updateItemHandler(bossOrder[currentBoss]);
-            //foreach (KeyValuePair<string, BossInfo> bi in bossInfo)
+            //if (ItemInfo.itemInfo.Count < 3)
             //{
-            //    bi.Value.updateItemHandler(bi.Key);
+            //    ItemInfo.itemInfo.AddRange(ItemInfo.unusedItems);
+            //    ItemInfo.unusedItems.Clear();
             //}
+            //bossInfo[bossOrder[currentBoss]].updateItemHandler(bossOrder[currentBoss]);
+            foreach (KeyValuePair<string, BossInfo> bi in bossInfo)
+            {
+                bi.Value.updateItemHandler(bi.Key);
+            }
         }
 
         public void updateItemHandler(string K)
@@ -74,14 +74,14 @@ namespace BossRush
             bossInfo[bossOrder[currentBoss]].itemHandler.activate(i);
         }
 
-        public static void updateText()
-        {
-            bossInfo[bossOrder[currentBoss]].itemHandler.updateText();
-        }
-
         public static string itemName(int i)
         {
             return bossInfo[bossOrder[currentBoss]].itemHandler.getName(i);
+        }
+
+        public static void destroyall()
+        {
+            bossInfo[bossOrder[currentBoss]].itemHandler.DestroyAll();
         }
 
         public static bool SpawnAll()
@@ -154,10 +154,10 @@ namespace BossRush
                 new BossInfo("MantisLords",     "defeatedMantisLords", 
                     "Fungus2_15", new Vector2(30.3f, 7.405624f), 
                     new Vector2(25, 8), new Vector2(30, 8), new Vector2(35, 8)));
-            bossInfo.Add("SoulMaster", 
+            /*bossInfo.Add("SoulMaster", 
                 new BossInfo("Soul Master",     "mageLordDefeated", 
                     "Ruins1_24", new Vector2(33.49188f, 29.40562f), 
-                    new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
+                    new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));*/
             bossInfo.Add("CG1",             
                 new BossInfo("CG1",             "killedMegaBeamMiner", 
                     "Mines_18", new Vector2(30.07801f, 11.40562f), 

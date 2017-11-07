@@ -64,16 +64,17 @@
     <Compile Include="BossInfo.cs" />
     <Compile Include="BossRushUpdate.cs" />
     <Compile Include="FsmUtil.cs" />
+    <Compile Include="GameObjectExtension.cs" />
     <Compile Include="ItemData.cs" />
     <Compile Include="ItemHandler.cs" />
     <Compile Include="ItemInfo.cs" />
+    <Compile Include="ItemTextFader.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ResourceLoader.cs" />
-    <Compile Include="SetInspectText.cs" />
     <Reference Include="UnityEngine">
       <HintPath>UnityEngine.dll</HintPath>
     </Reference>

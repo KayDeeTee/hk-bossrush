@@ -23,11 +23,7 @@ namespace BossRush
         {
             if (BossRush.gm.gameState == GameState.PLAYING)
             {   
-                if (BossRush.gm.sceneName == "Tutorial_01")
-                {
-                    BossInfo.toNextBoss(false);
-                }
-                if (!BossInfo.isBossDead() && BossRush.gm.sceneName != BossInfo.getBossScene())
+                if (!BossInfo.isBossDead() && BossRush.gm.sceneName != BossInfo.getBossScene() )
                 {
                     BossInfo.toNextBoss(false);
                 }
@@ -35,9 +31,8 @@ namespace BossRush
                 {
                     if (!spawnedItems)
                     {
-                        if ( BossInfo.SpawnAll() )
+                        if(BossInfo.SpawnAll())
                             spawnedItems = true;
-
                     }
                     else
                     {
