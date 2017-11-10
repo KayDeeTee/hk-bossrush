@@ -9,9 +9,16 @@ namespace BossRush
 
         public static Dictionary<string, BossInfo> bossInfo;
         public static string[] bossOrder;
+        public static bool[] bossState;
+        public static int stage;
+        public static int defeatedBosses;
         public static int currentBoss;
         public static GameObject battleScene;
         public static PlayMakerFSM[] bsComponents;
+
+        public static bool killedHK;
+
+        public static string[] bossName;
 
         public BossInfo(string iN, string vN, string sN, Vector2 spawn, Vector2 i1, Vector2 i2, Vector2 i3)
         {
@@ -52,16 +59,16 @@ namespace BossRush
 
         public static void assignItems()
         {
-            //if (ItemInfo.itemInfo.Count < 3)
-            //{
-            //    ItemInfo.itemInfo.AddRange(ItemInfo.unusedItems);
-            //    ItemInfo.unusedItems.Clear();
-            //}
-            //bossInfo[bossOrder[currentBoss]].updateItemHandler(bossOrder[currentBoss]);
-            foreach (KeyValuePair<string, BossInfo> bi in bossInfo)
+            if (ItemInfo.itemInfo.Count < 3)
             {
-                bi.Value.updateItemHandler(bi.Key);
+                ItemInfo.itemInfo.AddRange(ItemInfo.unusedItems);
+                ItemInfo.unusedItems.Clear();
             }
+            bossInfo[bossOrder[currentBoss]].updateItemHandler(bossOrder[currentBoss]);
+            //foreach (KeyValuePair<string, BossInfo> bi in bossInfo)
+            //{
+            //    bi.Value.updateItemHandler(bi.Key);
+            //}
         }
 
         public void updateItemHandler(string K)
@@ -89,12 +96,30 @@ namespace BossRush
             return bossInfo[bossOrder[currentBoss]].itemHandler.SpawnAll();
         }
 
+        public static void toNextBoss(bool b, int nextBoss)
+        {
+            if (b)
+            {
+                ItemData[] itemData = bossInfo[bossOrder[currentBoss]].itemHandler.getUnusedItems();
+                foreach (ItemData item in itemData)
+                {
+                    ItemInfo.unusedItems.Add(new ItemInfo(item.iternName, item.lanSheet, item.varName, item.stepAmount, item.lanKeys));
+                }
+                BossInfo.currentBoss = nextBoss;
+                assignItems();
+            }
+            string scene = bossInfo[bossOrder[currentBoss]].SceneName;
+            Vector2 pos = bossInfo[bossOrder[currentBoss]].ScenePos;
+            BossRush.Teleport(scene, pos);
+        }
+
         public static void toNextBoss(bool b)
         {
             string scene = bossInfo[bossOrder[currentBoss]].SceneName;
             Vector2 pos = bossInfo[bossOrder[currentBoss]].ScenePos;
             if (b)
             {
+                BossRush.flawless = true;
                 ItemData[] itemData = bossInfo[bossOrder[currentBoss]].itemHandler.getUnusedItems();
                 foreach (ItemData item in itemData)
                 {
@@ -131,6 +156,15 @@ namespace BossRush
                     }
                 }
             }
+            if (BossInfo.bossInfo[bossOrder[currentBoss]].VarName == "killedHollowKnight")
+            {
+                if (BossRush.gm.hero_ctrl.spellControl.FsmVariables.GetFsmBool("Dream Focus").Value == true)
+                {
+                    killedHK = true;
+                    BossRush.gm.hero_ctrl.spellControl.FsmVariables.GetFsmBool("Dream Focus").Value = false;
+                }
+                return killedHK;
+            }
             return PlayerData.instance.GetBoolInternal(BossInfo.bossInfo[bossOrder[currentBoss]].VarName); 
         }
 
@@ -154,10 +188,10 @@ namespace BossRush
                 new BossInfo("MantisLords",     "defeatedMantisLords", 
                     "Fungus2_15", new Vector2(30.3f, 7.405624f), 
                     new Vector2(25, 8), new Vector2(30, 8), new Vector2(35, 8)));
-            /*bossInfo.Add("SoulMaster", 
+            bossInfo.Add("SoulMaster", 
                 new BossInfo("Soul Master",     "mageLordDefeated", 
                     "Ruins1_24", new Vector2(33.49188f, 29.40562f), 
-                    new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));*/
+                    new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
             bossInfo.Add("CG1",             
                 new BossInfo("CG1",             "killedMegaBeamMiner", 
                     "Mines_18", new Vector2(30.07801f, 11.40562f), 
@@ -175,8 +209,8 @@ namespace BossRush
                     "Waterways_05", new Vector2(83.09189f, 7.405624f), 
                     new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
             bossInfo.Add("Grimm",           
-                new BossInfo("Grimm",           "killedGrimm", 
-                    "Grimm_Main_Tent", new Vector2(95.12892f, 6.405625f), 
+                new BossInfo("Grimm",           "killedGrimm",
+                    "Grimm_Main_Tent", new Vector2(85.1689f, 6.405625f), 
                     new Vector2(85, 7), new Vector2(90, 7), new Vector2(95, 7)));
             bossInfo.Add("Nosk",            
                 new BossInfo("Nosk",            "killedMimicSpider", 
@@ -215,19 +249,25 @@ namespace BossRush
                     "Dream_03_Infected_Knight", new Vector2(44.98343f, 28.40562f), 
                     new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
             bossInfo.Add("SoulTyrant",      
-                new BossInfo("SoulTyrant",      "mageLordDreamDefeated", 
-                    "Dream_02_Mage_Lord", new Vector2(44.98343f, 28.40562f), 
+                new BossInfo("SoulTyrant",      "mageLordDreamDefeated",
+                    "Dream_02_Mage_Lord", new Vector2(81.83551f, 13.40562f), 
                     new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
             bossInfo.Add("FailedKnight",    
                 new BossInfo("FailedKnight",    "falseKnightDreamDefeated", 
                     "Dream_01_False_Knight", new Vector2(44.98343f, 28.40562f), 
                     new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
-            //bossInfo.Add("THK", 
-            //  new BossInfo("", "defeatedMantisLords", "Fungus2_15", new Vector2(30.3f, 7.405624f), new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
-            //bossInfo.Add("WhiteDefender", 
-            //  new BossInfo("", "defeatedMantisLords", "Fungus2_15", new Vector2(30.3f, 7.405624f), new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
-            //bossInfo.Add("GPZ", 
-            //  new BossInfo("", "defeatedMantisLords", "Fungus2_15", new Vector2(30.3f, 7.405624f), new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
+            bossInfo.Add("THK",
+                new BossInfo("THK",             "killedHollowKnight", 
+                    "Room_Final_Boss_Core", new Vector2(42.29999f, 6.405623f), 
+                    new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
+            bossInfo.Add("WhiteDefender",
+                new BossInfo("WhiteDefender",   "whiteDefenderDefeated", 
+                    "Dream_04_White_Defender", new Vector2(24.162f, 7.405624f),
+                    new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
+            bossInfo.Add("GPZ",
+              new BossInfo("GPZ",               "greyPrinceDefeated", 
+                  "Dream_Mighty_Zote", new Vector2(26.53f, 131.4056f), 
+                  new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
             bossInfo.Add("NightmareKingGrimm", 
                 new BossInfo("NKG",             "defeatedNightmareGrimm", 
                     "Grimm_Nightmare", new Vector2(92.09892f, 6.405625f), 
@@ -237,11 +277,22 @@ namespace BossRush
                     "Dream_Final_Boss", new Vector2(60.4304f, 33.16534f),
                     new Vector2(-999, -999), new Vector2(-999, -999), new Vector2(-999, -999)));
 
-            bossOrder = new string[]{
-                "FalseKnight","GruzMother","Hornet","MantisLords","CG1","BroodingMawlek","WatcherKnights","DungDefender","Grimm","Nosk",
-                "Uumuu","Flukemarm","Collector","CG2","TraitorLord","Hornet2","BrokenVessel","LostKin","SoulTyrant","FailedKnight",
-                "NightmareKingGrimm","Radiance"
+            bossName = new string[]{
+                 "BLACK_KNIGHT", "CRYSTAL_GUARDIAN", "DUNG_DEFENDER", "MANTIS_LORDS", "FALSE_KNIGHT", "BIGFLY", "MAGE_LORD", "HORNET", "MAWLEK",
+                 "INFECTED_KNIGHT", "COLLECTOR", "CRYSTAL_GUARDIAN", "MEGA_JELLY", "GRIMM", "MIMIC_SPIDER", "HORNET", "FLUKEMARM", "TRAITOR_LORD",
+                 "NIGHTMARE_GRIMM", "HOLLOW_KNIGHT", "FINAL_BOSS", "FALSE_KNIGHT_DREAM", "KDT", "INFECTED_KNIGHT_DREAM", "GREY_PRINCE", "MAGE_LORD_DREAM", "WHITE_DEFENDER",
              };
+
+
+            bossOrder = new string[]{
+                "SoulMaster","Hornet","BroodingMawlek","MantisLords","FalseKnight","GruzMother","WatcherKnights","CG1","DungDefender",
+                "Hornet2","Flukemarm","TraitorLord","Uumuu","Grimm","Nosk","BrokenVessel","Collector","CG2",
+                "GPZ","SoulTyrant","WhiteDefender","FailedKnight","KDT","LostKin","NightmareKingGrimm","THK","Radiance"
+            };
+            stage = 0;
+            defeatedBosses = 16;
+            currentBoss = 4;
+            bossState = new bool[bossOrder.Length];
         }
     }
 }

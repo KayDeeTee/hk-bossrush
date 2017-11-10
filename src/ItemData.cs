@@ -55,6 +55,8 @@ namespace BossRush
                 ItemInfo.upgrades[varName] = 0;
             ItemInfo.upgrades[varName]++;
             BossRush.pickups++;
+            if (varName == "nailDamage")
+                PlayerData.instance.nailSmithUpgrades++;
             if (varName == "grimmChildLevel")
                 BossRush.grimmLevel++;
             if (varName == "equippedCharm_13")

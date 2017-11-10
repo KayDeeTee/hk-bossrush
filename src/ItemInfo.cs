@@ -66,6 +66,7 @@ namespace BossRush
             itemInfo.Add(new ItemInfo("grimmChild", "UI", "grimmChildLevel", 1, "CHARM_NAME_40"));
             itemInfo.Add(new ItemInfo("grimmChild", "UI", "grimmChildLevel", 1, "CHARM_NAME_40"));
             itemInfo.Add(new ItemInfo("grimmChild", "UI", "grimmChildLevel", 1, "CHARM_NAME_40"));
+            itemInfo.Add(new ItemInfo("Kingsoul", "UI", "royalCharmState", 3, "CHARM_NAME_36_B"));
         }
 
     }

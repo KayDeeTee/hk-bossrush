@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Drawing;
 using BossRush.Properties;
-using UnityEngine;
 using UnityEngine.UI;
 using HutongGames.PlayMaker;
 using System.Reflection;
@@ -17,17 +16,37 @@ namespace BossRush
 {
     public class BossRush : Mod
     {
-        private static string version = "0.6.1";
+        //private static string version = "0.6.1";
         public override string GetVersion()
         {
-            return version;
+            return Assembly.GetExecutingAssembly().GetName().Version.ToString(); 
         }
 
         public static Dictionary<string, BossInfo> bossInfo;
 
-        public static Texture2D bgTex;
+        //public static Texture2D bgTex;
         public static GameObject canvas;
         public static UnityEngine.UI.Image bgImg;
+        public static UnityEngine.UI.Image bossSelectImg;
+
+        public static bool selectingStage;
+
+        public static int selectX;
+        public static int selectY;
+        public static UnityEngine.RectTransform selectPos;
+
+        public static UnityEngine.UI.Image[] bossFaces;
+        public static Sprite[] bossFace1;
+        public static Sprite[] bossFace2;
+        public static Sprite[] bossFace3;
+        public static UnityEngine.UI.Text[] bossText;
+
+        public static UnityEngine.Font trajanBold;
+        public static UnityEngine.Font trajanNormal;
+        //public static Texture2D bossSelectBG;
+        
+
+        public static Texture2D timeTex;
 
         public static List<ItemInfo> items;
 
@@ -44,6 +63,10 @@ namespace BossRush
         public static GameObject shinySlot3;
         public static bool spawnSlot1, spawnSlot2, spawnSlot3;
 
+        public static GameObject timeCounter;
+        public static TextMesh timeText;
+        public static float currentTime;
+
         public static GameManager gm;
         public static HeroController hc;
 
@@ -53,7 +76,7 @@ namespace BossRush
         public static void Teleport(string scenename, Vector3 pos)
         {
 
-            //PlayerData.instance.nailDamage = 65;
+            PlayerData.instance.nailDamage = 65;
 
             if (hc == null)
             {
@@ -64,30 +87,55 @@ namespace BossRush
                     PlayerData.instance.SetIntInternal("charmCost_" + i, 0);
                 }
             }
+
+            HeroController.instance.RegainControl();
+            HeroController.instance.StartAnimationControl();
+            HeroController.instance.cState.invulnerable = false;
+
             bgImg.enabled = true;
             BossInfo.battleScene = null;
 
-            pickups = 0;
-            flawless = true;
+            BossRush.selectX = 1;
+            BossRush.selectY = 1;
+            BossRush.selectingStage = false;
 
-            quakeLevel = PlayerData.instance.quakeLevel;
-            PlayerData.instance.quakeLevel = 0;
+            bossSelectImg.enabled = false;
+            selectPos.GetComponent<UnityEngine.UI.Image>().enabled = false;
+            for (int i = 0; i < bossFaces.Length; i++)
+            {
+                bossFaces[i].enabled = false;
+                bossText[i].enabled = false;
+            }
+            if (BossInfo.defeatedBosses % 9 == 8)
+            {
+                if (BossInfo.defeatedBosses < 9)
+                    for (int i = 0; i < bossFaces.Length; i++)
+                        bossFaces[i].sprite = bossFace2[i];
+                else
+                    for (int i = 0; i < bossFaces.Length; i++)
+                        bossFaces[i].sprite = bossFace3[i];
+            }
+
+            pickups = 0;
+
+            PlayerData.instance.soulLimited = false;
+            PlayerData.instance.EndSoulLimiter();
+            if (!ItemInfo.upgrades.ContainsKey("quakeLevel"))
+                ItemInfo.upgrades["quakeLevel"] = 0;
+            quakeLevel = ItemInfo.upgrades["quakeLevel"];
+            if (scenename == "Ruins1_24")
+                PlayerData.instance.quakeLevel = 0;
+            else
+                PlayerData.instance.quakeLevel = quakeLevel;
+            //PlayerData.instance.quakeLevel = 0;
 
             PlayerData.instance.canDash = PlayerData.instance.hasDash;
             PlayerData.instance.canWallJump = PlayerData.instance.hasWalljump;
 
-            if (PlayerData.instance.equippedCharm_6)
+            if (PlayerData.instance.royalCharmState > 0 && !PlayerData.instance.gotCharm_36)
             {
-                BossRush.hc.normalSlash.SetFury(true);
-                BossRush.hc.normalSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
-                BossRush.hc.alternateSlash.SetFury(true);
-                BossRush.hc.alternateSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
-                BossRush.hc.upSlash.SetFury(true);
-                BossRush.hc.upSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
-                BossRush.hc.downSlash.SetFury(true);
-                BossRush.hc.downSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
-                BossRush.hc.wallSlash.SetFury(true);
-                BossRush.hc.wallSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
+                PlayerData.instance.gotCharm_36 = true;
+                PlayerData.instance.equippedCharm_36 = true;
             }
 
             oldGrimmLevel = grimmLevel;
@@ -149,6 +197,49 @@ namespace BossRush
             gm.LoadScene(scenename);
         }
 
+        public static Sprite createSprite(byte[] data, int x, int y, int w, int h)
+        {
+            Texture2D tex = new Texture2D(1,1);
+            tex.LoadImage(data);
+            tex.anisoLevel = 0;
+            int width = tex.width;
+            int height = tex.height;
+            return Sprite.Create(tex, new Rect(x, y, w, h), Vector2.zero);
+        }
+
+        public static GameObject createImagePanel(GameObject parent, byte[] sprite_data, int x, int y, int w, int h, int sprite_x, int sprite_y, int sprite_w, int sprite_h)
+        {
+            GameObject panel = new GameObject();
+            panel.transform.parent = parent.transform;
+            panel.AddComponent<CanvasRenderer>();
+            RectTransform rt = panel.AddComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(w, h);
+            rt.anchorMax = new Vector2(0, 0);
+            rt.anchorMin = new Vector2(0, 0);
+            rt.anchoredPosition = new Vector2(x, y);
+            UnityEngine.UI.Image img = panel.AddComponent<UnityEngine.UI.Image>();
+            img.sprite = createSprite(sprite_data, sprite_x, sprite_y, sprite_w, sprite_h);
+            return panel;
+        }
+
+        public static GameObject createTextPanel(GameObject parent, int x, int y, int w, int h)
+        {
+            GameObject panel = new GameObject();
+            panel.transform.parent = parent.transform;
+            panel.AddComponent<CanvasRenderer>();
+            RectTransform rt = panel.AddComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(w, h);
+            rt.anchorMax = new Vector2(0, 0);
+            rt.anchorMin = new Vector2(0, 0);
+            rt.anchoredPosition = new Vector2(x, y);
+            UnityEngine.UI.Text text = panel.AddComponent<UnityEngine.UI.Text>();
+            text.font = trajanBold;
+            text.text = "%TEXT%";
+            text.fontSize = 15;
+            text.alignment = TextAnchor.MiddleCenter;
+            return panel;
+        }
+
         public override void Initialize()
         {
             ModHooks.ModLog("Initializing BossRush");
@@ -157,40 +248,79 @@ namespace BossRush
             ItemInfo.createItemInfo();
             BossInfo.assignItems();
 
+            foreach (UnityEngine.Font f in UnityEngine.Resources.FindObjectsOfTypeAll<UnityEngine.Font>())
+            {
+                if (f != null && f.name == "TrajanPro-Bold")
+                {
+                    trajanBold = f;
+                }
+
+                if (f != null && f.name == "TrajanPro-Regular")
+                {
+                    trajanNormal = f;
+                }
+            }
+
             shiny = null;
-            
-            byte[] bg = ResourceLoader.loadBackground();
-            bgTex = new Texture2D(1280, 720);
-            bgTex.LoadImage(bg);
 
             canvas = new GameObject();
             canvas.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             CanvasScaler cs = canvas.AddComponent<CanvasScaler>();
             cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            cs.referenceResolution = new Vector2(1280, 720);
+            cs.referenceResolution = new Vector2(1920, 1080);
             canvas.AddComponent<GraphicRaycaster>();
 
-            GameObject panel = new GameObject();
-            panel.transform.parent = canvas.transform;
-            panel.AddComponent<CanvasRenderer>();
-            RectTransform rt = panel.AddComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(1280, 720);
-            rt.anchorMax = new Vector2(0, 0);
-            rt.anchorMin = new Vector2(0, 0);
-            rt.anchoredPosition = new Vector2(640, 360);
-            bgImg = panel.AddComponent<UnityEngine.UI.Image>();
-            bgImg.sprite = Sprite.Create(bgTex, new Rect(0, 0, 1280, 720), Vector2.zero);
+            byte[] bossFaces1 = ResourceLoader.loadBossFaces1();
+            bossFaces = new UnityEngine.UI.Image[9];
+            bossFace1 = new Sprite[9];
+            bossFace2 = new Sprite[9];
+            bossFace3 = new Sprite[9];
+            bossText = new UnityEngine.UI.Text[9];
+
+            bgImg = createImagePanel(canvas, ResourceLoader.loadBackground(), 960, 540, 1920,1080, 0, 0, 1280, 720).GetComponent<UnityEngine.UI.Image>();
+            bossSelectImg = createImagePanel(canvas, ResourceLoader.loadBossSelect(), 960, 540, 1920, 1080, 0, 0, 1920, 1080).GetComponent<UnityEngine.UI.Image>();
+            selectPos = createImagePanel(canvas, ResourceLoader.loadSelect(), 960, 540, 229, 193, 0, 0, 228, 193).GetComponent<RectTransform>();
+            //createImagePanel(canvas, ResourceLoader.loadBossFaces1(), 960, 540, 0, 0, 211, 177).GetComponent<UnityEngine.UI.Image>();
+
+            for (int i = 0; i < bossFaces.Length; i++)
+            {
+                int x = (i%3);
+                int y = i / 3;
+                // 105.5
+                // 726.5 | 959.5 | 1192.5 = 233
+                // 88.5
+                // 290.5 | 522.5 | 754.5 = 232
+                bossFaces[i] = createImagePanel(canvas, ResourceLoader.loadBossFaces1(), (233*x)+727, (232*y)+325, 211, 176, (x*211)+1, (y*177)+1, 207, 174).GetComponent<UnityEngine.UI.Image>();
+                bossText[i] = createTextPanel(canvas, (233 * x) + 727, (232 * y) + 217, 211, 30).GetComponent<UnityEngine.UI.Text>();
+            }
+            for (int i = 0; i < bossFaces.Length; i++)
+            {
+                int x = (i%3);
+                int y = i / 3;
+                bossFace1[i] = createSprite(ResourceLoader.loadBossFaces1(), (x * 211) + 1, (y * 177) + 1, 207, 174);
+                bossFace2[i] = createSprite(ResourceLoader.loadBossFaces2(), (x * 211) + 1, (y * 177) + 1, 207, 174);
+                bossFace3[i] = createSprite(ResourceLoader.loadBossFaces3(), (x * 211) + 1, (y * 177) + 1, 207, 174);
+            }
+
+           selectPos.SetAsLastSibling();
 
             GameObject.DontDestroyOnLoad(canvas);
-            GameObject.DontDestroyOnLoad(bgImg);
 
             bgImg.enabled = false;
+            bossSelectImg.enabled = false;
+            selectPos.GetComponent<UnityEngine.UI.Image>().enabled = false;
+            for (int i = 0; i < bossFaces.Length; i++)
+            {
+                bossFaces[i].enabled = false;
+                bossText[i].enabled = false;
+            }
 
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += onSceneLoad;
 
+            ModHooks.Instance.TakeHealthHook += tookDamage;
             ModHooks.Instance.ColliderCreateHook += onCollider;
             ModHooks.Instance.NewGameHook += resetData;
-            ModHooks.Instance.TakeDamageHook += tookDamage;
+            //ModHooks.Instance.TakeDamageHook += tookDamage;
 
             ModHooks.Instance.LanguageGetHook += PromptOverride;
 
@@ -199,6 +329,12 @@ namespace BossRush
 
         public string PromptOverride(string key, string sheet)
         {
+            if (key == "KDT_SUPER")
+                return "Thanks";
+            if (key == "KDT_MAIN")
+                return "for";
+            if (key == "KDT_SUB")
+                return "Playing!";
             if (key == "INSPECT")
                 return "";
             if (key == "item0")
@@ -210,7 +346,7 @@ namespace BossRush
             return Language.Language.GetInternal(key, sheet);
         }
 
-        public int tookDamage(ref int type, int d)
+        public int tookDamage(int d)
         {
             if (d > 0 && (hc.damageMode != DamageMode.NO_DAMAGE && !hc.cState.invulnerable && !hc.cState.recoiling && !PlayerData.instance.isInvincible && !hc.cState.dead && !hc.cState.hazardDeath))
             {
@@ -234,12 +370,56 @@ namespace BossRush
 
         public void onSceneLoad(Scene dst, LoadSceneMode lsm)
         {
+
+            if (gm == null)
+            {
+                gm = GameManager.instance;
+                gm.gameObject.AddComponent<BossRushUpdate>();
+            }
+
             HeroController.instance.RegainControl();
             HeroController.instance.cState.Reset();
             bgImg.enabled = false;
 
             RemoveTransitions();
-            PlayerData.instance.quakeLevel = quakeLevel;
+
+            if (PlayerData.instance.equippedCharm_6)
+            {
+                BossRush.hc.normalSlash.SetFury(true);
+                BossRush.hc.normalSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
+                BossRush.hc.alternateSlash.SetFury(true);
+                BossRush.hc.alternateSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
+                BossRush.hc.upSlash.SetFury(true);
+                BossRush.hc.upSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
+                BossRush.hc.downSlash.SetFury(true);
+                BossRush.hc.downSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
+                BossRush.hc.wallSlash.SetFury(true);
+                BossRush.hc.wallSlashFsm.FsmVariables.GetFsmFloat("Multiplier").Value = 1.75f;
+            }
+
+            if( timeCounter == null ){
+                timeCounter = GameObject.Instantiate(GameCameras.instance.geoCounter.gameObject);
+                timeCounter.transform.position = new Vector3(-4.1f, -2.0f, 0);
+                foreach (PlayMakerFSM fsm in timeCounter.GetComponentsInChildren<PlayMakerFSM>())
+                {
+                    GameObject.Destroy(fsm);
+                }
+                timeCounter.transform.FindChild("Add Text").GetComponent<TextMesh>().text = "";
+                GameObject.Destroy(timeCounter.transform.FindChild("Add Text"));
+                timeCounter.transform.FindChild("Subtract Text").GetComponent<TextMesh>().text = "";
+                GameObject.Destroy(timeCounter.transform.FindChild("Subtract Text"));
+                GameObject.Destroy(timeCounter.GetComponent<GeoCounter>());
+
+                GameObject.Destroy(timeCounter.transform.FindChild("Geo Sprite").GetComponent<tk2dSprite>());
+                timeCounter.transform.FindChild("Geo Sprite").gameObject.AddComponent<UnityEngine.UI.Image>().sprite = Sprite.Create(timeTex, new Rect(0, 0, 64, 64), Vector2.zero);
+
+                timeText = timeCounter.transform.FindChild("Geo Text").gameObject.GetComponent<TextMesh>();
+
+                GameObject.DontDestroyOnLoad(timeCounter);
+            }
+                
+
+            //dataDump(GameCameras.instance.geoCounter.gameObject, 1);
         }
 
         private void RemoveTransitions()
@@ -278,8 +458,25 @@ namespace BossRush
         public void resetData()
         {
             UnityEngine.Random.seed = System.DateTime.Now.Millisecond;
-            currentBoss = 0;
-            BossInfo.currentBoss = 0;
+            GameObject.Destroy(shinySlot1);
+            GameObject.Destroy(shinySlot2);
+            GameObject.Destroy(shinySlot3);
+            currentTime = 0;
+            shiny = null;
+            flawless = true;
+            shinySlot1 = null;
+            shinySlot2 = null;
+            shinySlot3 = null;
+            currentBoss = 16;
+            grimmLevel = 0;
+            oldGrimmLevel = 0;
+            quakeLevel = 0;
+
+            for (int i = 0; i < bossFaces.Length; i++)
+                bossFaces[i].sprite = bossFace1[i];
+
+            BossInfo.killedHK = false;
+            BossInfo.currentBoss = 4;
             BossInfo.createBossInfo();       
             ItemInfo.createItemInfo();
             BossInfo.assignItems();
@@ -362,11 +559,6 @@ namespace BossRush
             if (go.transform.parent.gameObject.name.Contains("ITEM_2"))
             {
                 createLabel(go, 2);
-            }
-            if (gm == null)
-            {
-                gm = GameManager.instance;
-                gm.gameObject.AddComponent<BossRushUpdate>();
             }
             if (gm.sceneName == "Crossroads_10")
             {
