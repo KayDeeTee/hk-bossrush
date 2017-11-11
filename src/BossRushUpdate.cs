@@ -10,7 +10,7 @@ namespace BossRush
 {
     public class BossRushUpdate : MonoBehaviour
     {
-        private bool spawnedItems = false;
+        public static bool spawnedItems = false;
         Rect itemRect = new Rect(new Vector2(5, (int)Screen.height / 2), new Vector2(500, 500));
 
         //public void OnGUI()
@@ -21,6 +21,7 @@ namespace BossRush
 
         public void Update()
         {
+            if( BossRush.gm.inputHandler.inputActions.paneLeft.WasPressed)
             if (BossRush.selectingStage)
             {
                 HeroController.instance.RelinquishControl();
@@ -52,7 +53,7 @@ namespace BossRush
                     int bossId = BossRush.selectX + (BossRush.selectY*3);
                     int j = bossId + ((int)Mathf.Floor(BossInfo.defeatedBosses / 9) * 9);
                     bool skip = false;
-                    if (BossInfo.defeatedBosses >= 18 && BossInfo.defeatedBosses < 26 && (BossRush.selectX == 2 && BossRush.selectY == 2))
+                    if (BossInfo.defeatedBosses >= 18 && BossInfo.defeatedBosses < 25 && (BossRush.selectX == 2 && BossRush.selectY == 2))
                         skip = true;
                     if (BossInfo.defeatedBosses >= 18 && (BossRush.selectX == 1 && BossRush.selectY == 1))
                         skip = true;
@@ -140,6 +141,7 @@ namespace BossRush
                                     BossRush.bossText[i].enabled = true;
                                 }
                                 BossRush.selectingStage = true;
+                                PlayerData.instance.disablePause = true;
                             }
                             //BossInfo.toNextBoss(true);
                         }

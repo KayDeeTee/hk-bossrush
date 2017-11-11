@@ -76,8 +76,6 @@ namespace BossRush
         public static void Teleport(string scenename, Vector3 pos)
         {
 
-            PlayerData.instance.nailDamage = 65;
-
             if (hc == null)
             {
                 hc = gm.hero_ctrl;
@@ -91,6 +89,9 @@ namespace BossRush
             HeroController.instance.RegainControl();
             HeroController.instance.StartAnimationControl();
             HeroController.instance.cState.invulnerable = false;
+            PlayerData.instance.disablePause = false;
+
+            GameCameras.instance.hudCamera.enabled = true;
 
             bgImg.enabled = true;
             BossInfo.battleScene = null;
@@ -467,7 +468,7 @@ namespace BossRush
             shinySlot1 = null;
             shinySlot2 = null;
             shinySlot3 = null;
-            currentBoss = 16;
+            currentBoss = 4;
             grimmLevel = 0;
             oldGrimmLevel = 0;
             quakeLevel = 0;

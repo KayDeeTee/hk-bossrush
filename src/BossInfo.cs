@@ -162,6 +162,11 @@ namespace BossRush
                 {
                     killedHK = true;
                     BossRush.gm.hero_ctrl.spellControl.FsmVariables.GetFsmBool("Dream Focus").Value = false;
+                    if (!BossRushUpdate.spawnedItems)
+                        if (BossInfo.SpawnAll())
+                            BossRushUpdate.spawnedItems = true;
+                        else
+                            Modding.ModHooks.ModLog("Couldn't spawn HK items");
                 }
                 return killedHK;
             }
@@ -290,7 +295,7 @@ namespace BossRush
                 "GPZ","SoulTyrant","WhiteDefender","FailedKnight","KDT","LostKin","NightmareKingGrimm","THK","Radiance"
             };
             stage = 0;
-            defeatedBosses = 16;
+            defeatedBosses = 0;
             currentBoss = 4;
             bossState = new bool[bossOrder.Length];
         }
