@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="BossInfo.cs" />
     <Compile Include="BossRushUpdate.cs" />
+    <Compile Include="CanvasUtil.cs" />
     <Compile Include="FsmUtil.cs" />
     <Compile Include="GameObjectExtension.cs" />
     <Compile Include="ItemData.cs" />

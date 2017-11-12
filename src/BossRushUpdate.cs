@@ -13,15 +13,27 @@ namespace BossRush
         public static bool spawnedItems = false;
         Rect itemRect = new Rect(new Vector2(5, (int)Screen.height / 2), new Vector2(500, 500));
 
-        //public void OnGUI()
-        //{
-        //    if (BossRush.gm.gameState == GameState.PLAYING && spawnedItems)
-        //        GUI.Label(itemRect, String.Format("L : {0}\nC : {1}\nR : {2}", BossInfo.itemName(1), BossInfo.itemName(0), BossInfo.itemName(2)));
-        //}
+        
 
         public void Update()
         {
-            if( BossRush.gm.inputHandler.inputActions.paneLeft.WasPressed)
+            if (!BossRush.selectingStage && spawnedItems)
+            {
+                BossRush.textSkip.text = "Press to skip without picking up items";
+                BossRush.rectSkip.sizeDelta = (BossRush.uib.GetButtonSkinFor(BossRush.ih.inputActions.quickMap).skinType == ButtonSkinType.SQUARE) ? new Vector2(58, 58) : new Vector2(98, 61);
+                BossRush.imageSkip.sprite = BossRush.uib.GetButtonSkinFor(BossRush.ih.inputActions.quickMap).sprite;
+                BossRush.imageText.text = BossRush.uib.GetButtonSkinFor(BossRush.ih.inputActions.quickMap).symbol;
+
+                if (BossRush.ih.inputActions.quickMap.WasPressed)
+                    BossRush.pickups = 3;
+
+                BossRush.FadeInSkip(0.25f);
+            }
+            else
+            {
+                BossRush.FadeOutSkip(0.25f);
+            }
+
             if (BossRush.selectingStage)
             {
                 HeroController.instance.RelinquishControl();

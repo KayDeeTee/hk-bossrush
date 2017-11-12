@@ -5,12 +5,12 @@ using Modding;
 using GlobalEnums;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Drawing;
 using BossRush.Properties;
 using UnityEngine.UI;
 using HutongGames.PlayMaker;
 using System.Reflection;
 using TMPro;
+using CanvasUtils;
 
 namespace BossRush
 {
@@ -26,41 +26,32 @@ namespace BossRush
 
         //public static Texture2D bgTex;
         public static GameObject canvas;
-        public static UnityEngine.UI.Image bgImg;
-        public static UnityEngine.UI.Image bossSelectImg;
+        public static Image bgImg, bossSelectImg;
 
         public static bool selectingStage;
 
-        public static int selectX;
-        public static int selectY;
-        public static UnityEngine.RectTransform selectPos;
+        public static int selectX,selectY;
+        public static RectTransform selectPos;
 
-        public static UnityEngine.UI.Image[] bossFaces;
-        public static Sprite[] bossFace1;
-        public static Sprite[] bossFace2;
-        public static Sprite[] bossFace3;
-        public static UnityEngine.UI.Text[] bossText;
+        public static Image[] bossFaces;
+        public static Sprite[] bossFace1,bossFace2,bossFace3;
+        public static Text[] bossText;
 
-        public static UnityEngine.Font trajanBold;
-        public static UnityEngine.Font trajanNormal;
-        //public static Texture2D bossSelectBG;
-        
+        public static Image imageSkip;
+        public static Text textSkip, imageText;
+        public static RectTransform rectSkip;
 
         public static Texture2D timeTex;
 
         public static List<ItemInfo> items;
 
         public static int grimmLevel, oldGrimmLevel = 0;
-
         public static int quakeLevel = 0;
-
         public static int currentBoss;
 
         public static GameObject shiny;
 
-        public static GameObject shinySlot1;
-        public static GameObject shinySlot2;
-        public static GameObject shinySlot3;
+        public static GameObject shinySlot1,shinySlot2,shinySlot3;
         public static bool spawnSlot1, spawnSlot2, spawnSlot3;
 
         public static GameObject timeCounter;
@@ -73,8 +64,27 @@ namespace BossRush
         public static int pickups = 0;
         public static bool flawless;
 
+        public static UIButtonSkins uib;
+        public static InputHandler ih;
+
+        public static void FadeInSkip(float x)
+        {
+            textSkip.CrossFadeAlpha(1, x, true);
+            imageSkip.CrossFadeAlpha(1, x, true);
+            imageText.CrossFadeAlpha(1, x, true);
+        }
+
+        public static void FadeOutSkip(float x)
+        {
+            textSkip.CrossFadeAlpha(0, x, true);
+            imageSkip.CrossFadeAlpha(0, x, true);
+            imageText.CrossFadeAlpha(0, x, true);
+        }
+
         public static void Teleport(string scenename, Vector3 pos)
         {
+
+            //PlayerData.instance.nailDamage = 65;
 
             if (hc == null)
             {
@@ -101,7 +111,7 @@ namespace BossRush
             BossRush.selectingStage = false;
 
             bossSelectImg.enabled = false;
-            selectPos.GetComponent<UnityEngine.UI.Image>().enabled = false;
+            selectPos.GetComponent<Image>().enabled = false;
             for (int i = 0; i < bossFaces.Length; i++)
             {
                 bossFaces[i].enabled = false;
@@ -198,78 +208,29 @@ namespace BossRush
             gm.LoadScene(scenename);
         }
 
-        public static Sprite createSprite(byte[] data, int x, int y, int w, int h)
-        {
-            Texture2D tex = new Texture2D(1,1);
-            tex.LoadImage(data);
-            tex.anisoLevel = 0;
-            int width = tex.width;
-            int height = tex.height;
-            return Sprite.Create(tex, new Rect(x, y, w, h), Vector2.zero);
-        }
-
-        public static GameObject createImagePanel(GameObject parent, byte[] sprite_data, int x, int y, int w, int h, int sprite_x, int sprite_y, int sprite_w, int sprite_h)
-        {
-            GameObject panel = new GameObject();
-            panel.transform.parent = parent.transform;
-            panel.AddComponent<CanvasRenderer>();
-            RectTransform rt = panel.AddComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(w, h);
-            rt.anchorMax = new Vector2(0, 0);
-            rt.anchorMin = new Vector2(0, 0);
-            rt.anchoredPosition = new Vector2(x, y);
-            UnityEngine.UI.Image img = panel.AddComponent<UnityEngine.UI.Image>();
-            img.sprite = createSprite(sprite_data, sprite_x, sprite_y, sprite_w, sprite_h);
-            return panel;
-        }
-
-        public static GameObject createTextPanel(GameObject parent, int x, int y, int w, int h)
-        {
-            GameObject panel = new GameObject();
-            panel.transform.parent = parent.transform;
-            panel.AddComponent<CanvasRenderer>();
-            RectTransform rt = panel.AddComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(w, h);
-            rt.anchorMax = new Vector2(0, 0);
-            rt.anchorMin = new Vector2(0, 0);
-            rt.anchoredPosition = new Vector2(x, y);
-            UnityEngine.UI.Text text = panel.AddComponent<UnityEngine.UI.Text>();
-            text.font = trajanBold;
-            text.text = "%TEXT%";
-            text.fontSize = 15;
-            text.alignment = TextAnchor.MiddleCenter;
-            return panel;
-        }
-
         public override void Initialize()
         {
-            ModHooks.ModLog("Initializing BossRush");
+            ModHooks.Logger.Log("Initializing BossRush");
 
             BossInfo.createBossInfo();
             ItemInfo.createItemInfo();
             BossInfo.assignItems();
 
-            foreach (UnityEngine.Font f in UnityEngine.Resources.FindObjectsOfTypeAll<UnityEngine.Font>())
-            {
-                if (f != null && f.name == "TrajanPro-Bold")
-                {
-                    trajanBold = f;
-                }
-
-                if (f != null && f.name == "TrajanPro-Regular")
-                {
-                    trajanNormal = f;
-                }
-            }
+            CanvasUtil.createFonts();
 
             shiny = null;
 
-            canvas = new GameObject();
-            canvas.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
-            CanvasScaler cs = canvas.AddComponent<CanvasScaler>();
-            cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            cs.referenceResolution = new Vector2(1920, 1080);
-            canvas.AddComponent<GraphicRaycaster>();
+            uib = UIManager.instance.uiButtonSkins;
+            ih = GameManager.instance.inputHandler;
+
+            canvas = CanvasUtil.createCanvas(1920,1080);
+
+            textSkip = CanvasUtil.createTextPanel(canvas, "Press to skip without picking up items", 960, 30, 1920, 50, 24).GetComponent<Text>();
+            imageSkip = CanvasUtil.createImagePanel(canvas, 960, 90, 58, 58).GetComponent<Image>();
+            imageText = CanvasUtil.createTextPanel(canvas, "", 960, 90, 58, 58, 24).GetComponent<Text>();
+            rectSkip = imageSkip.gameObject.GetComponent<RectTransform>();
+
+            FadeOutSkip(0);
 
             byte[] bossFaces1 = ResourceLoader.loadBossFaces1();
             bossFaces = new UnityEngine.UI.Image[9];
@@ -278,29 +239,24 @@ namespace BossRush
             bossFace3 = new Sprite[9];
             bossText = new UnityEngine.UI.Text[9];
 
-            bgImg = createImagePanel(canvas, ResourceLoader.loadBackground(), 960, 540, 1920,1080, 0, 0, 1280, 720).GetComponent<UnityEngine.UI.Image>();
-            bossSelectImg = createImagePanel(canvas, ResourceLoader.loadBossSelect(), 960, 540, 1920, 1080, 0, 0, 1920, 1080).GetComponent<UnityEngine.UI.Image>();
-            selectPos = createImagePanel(canvas, ResourceLoader.loadSelect(), 960, 540, 229, 193, 0, 0, 228, 193).GetComponent<RectTransform>();
-            //createImagePanel(canvas, ResourceLoader.loadBossFaces1(), 960, 540, 0, 0, 211, 177).GetComponent<UnityEngine.UI.Image>();
+            bgImg = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadBackground(), 960, 540, 1920,1080, 0, 0, 1280, 720).GetComponent<Image>();
+            bossSelectImg = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadBossSelect(), 960, 540, 1920, 1080, 0, 0, 1920, 1080).GetComponent<Image>();
+            selectPos = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadSelect(), 960, 540, 229, 193, 0, 0, 228, 193).GetComponent<RectTransform>();
 
             for (int i = 0; i < bossFaces.Length; i++)
             {
                 int x = (i%3);
                 int y = i / 3;
-                // 105.5
-                // 726.5 | 959.5 | 1192.5 = 233
-                // 88.5
-                // 290.5 | 522.5 | 754.5 = 232
-                bossFaces[i] = createImagePanel(canvas, ResourceLoader.loadBossFaces1(), (233*x)+727, (232*y)+325, 211, 176, (x*211)+1, (y*177)+1, 207, 174).GetComponent<UnityEngine.UI.Image>();
-                bossText[i] = createTextPanel(canvas, (233 * x) + 727, (232 * y) + 217, 211, 30).GetComponent<UnityEngine.UI.Text>();
+                bossFaces[i] = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadBossFaces1(), (233 * x) + 727, (232 * y) + 325, 211, 176, (x * 211) + 1, (y * 177) + 1, 207, 174).GetComponent<UnityEngine.UI.Image>();
+                bossText[i] = CanvasUtil.createTextPanel(canvas, (233 * x) + 727, (232 * y) + 217, 211, 30).GetComponent<UnityEngine.UI.Text>();
             }
             for (int i = 0; i < bossFaces.Length; i++)
             {
                 int x = (i%3);
                 int y = i / 3;
-                bossFace1[i] = createSprite(ResourceLoader.loadBossFaces1(), (x * 211) + 1, (y * 177) + 1, 207, 174);
-                bossFace2[i] = createSprite(ResourceLoader.loadBossFaces2(), (x * 211) + 1, (y * 177) + 1, 207, 174);
-                bossFace3[i] = createSprite(ResourceLoader.loadBossFaces3(), (x * 211) + 1, (y * 177) + 1, 207, 174);
+                bossFace1[i] = CanvasUtil.createSprite(ResourceLoader.loadBossFaces1(), (x * 211) + 1, (y * 177) + 1, 207, 174);
+                bossFace2[i] = CanvasUtil.createSprite(ResourceLoader.loadBossFaces2(), (x * 211) + 1, (y * 177) + 1, 207, 174);
+                bossFace3[i] = CanvasUtil.createSprite(ResourceLoader.loadBossFaces3(), (x * 211) + 1, (y * 177) + 1, 207, 174);
             }
 
            selectPos.SetAsLastSibling();
@@ -325,7 +281,7 @@ namespace BossRush
 
             ModHooks.Instance.LanguageGetHook += PromptOverride;
 
-            ModHooks.ModLog("Initialized BossRush");
+            ModHooks.Logger.Log("Initialized BossRush");
         }
 
         public string PromptOverride(string key, string sheet)
