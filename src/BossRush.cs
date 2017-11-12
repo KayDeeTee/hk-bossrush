@@ -84,7 +84,7 @@ namespace BossRush
         public static void Teleport(string scenename, Vector3 pos)
         {
 
-            //PlayerData.instance.nailDamage = 65;
+            PlayerData.instance.nailDamage = 65;
 
             if (hc == null)
             {
@@ -455,22 +455,61 @@ namespace BossRush
 
         public void createLabel(GameObject go, int i)
         {
+            if (go?.transform == null)
+                return;
+            
             GameObject label = new GameObject("Label");
 
-            GameObject oldLabel = go.transform.FindChild("Arrow Prompt(Clone)/Labels/Inspect").gameObject;
+            Transform child = go.transform.FindChild("Arrow Prompt(Clone)/Labels/Inspect");
+
+            if (child?.gameObject == null)
+                return;
+
+            GameObject oldLabel = child.gameObject;
+
+            if (oldLabel?.transform?.parent?.parent?.parent == null)
+                return;
+
 
             //RectTransform
-            label.AddComponent<RectTransform>(oldLabel.GetComponent<RectTransform>());
+            RectTransform rectTransform = oldLabel.GetComponent<RectTransform>();
+            if (rectTransform == null) return;
+
+            label.AddComponent(rectTransform);
+
             //MeshRenderer
-            label.AddComponent<MeshRenderer>(oldLabel.GetComponent<MeshRenderer>());
+            MeshRenderer meshRenderer = oldLabel.GetComponent<MeshRenderer>();
+            if (meshRenderer == null) return;
+
+            label.AddComponent(meshRenderer);
+
             //MeshFilter
-            label.AddComponent<MeshFilter>(oldLabel.GetComponent<MeshFilter>());
+            MeshFilter meshFilter = oldLabel.GetComponent<MeshFilter>();
+            if (meshFilter == null) return;
+
+            label.AddComponent(meshFilter);
+
             //TextContainer
-            label.AddComponent<TextContainer>(oldLabel.GetComponent<TextContainer>());
+            TextContainer textContainer = oldLabel.GetComponent<TextContainer>();
+            if (textContainer == null) return;
+
+            label.AddComponent(textContainer);
+
             //TextMeshPro
-            label.AddComponent<TextMeshPro>(oldLabel.GetComponent<TextMeshPro>());
+            TextMeshPro textMeshPro = oldLabel.GetComponent<TextMeshPro>();
+            if (textMeshPro == null) return;
+
+            label.AddComponent(textMeshPro);
+
             //ChangeFontByLanguage
-            label.AddComponent<ChangeFontByLanguage>(oldLabel.GetComponent<ChangeFontByLanguage>());
+            ChangeFontByLanguage changeFontByLanguage = oldLabel.GetComponent<ChangeFontByLanguage>();
+            if (changeFontByLanguage == null) return;
+
+            label.AddComponent(changeFontByLanguage);
+
+
+            if (label.transform?.localPosition == null)
+                return;
 
             label.transform.parent = oldLabel.transform.parent.parent.parent;
             label.transform.localPosition = label.transform.localPosition + (Vector3.up * 2.4f);
@@ -478,30 +517,51 @@ namespace BossRush
             label.SetActive(true);
 
             TextMeshPro tmp = label.GetComponent<TextMeshPro>();
+            if (tmp == null)
+                return;
+
             ChangeFontByLanguage fonts = label.GetComponent<ChangeFontByLanguage>();
+            if (fonts == null)
+                return;
+
             tmp.font = fonts.defaultFont;
             string a = Language.Language.CurrentLanguage().ToString();
-            if (a == "JA")
+
+            switch (a)
             {
-                tmp.font = fonts.fontJA;
-            }
-            if (a == "RU")
-            {
-                tmp.font = fonts.fontRU;
+                case "JA":
+                    tmp.font = fonts.fontJA;
+                    break;
+                case "RU":
+                    tmp.font = fonts.fontRU;
+                    break;
             }
             tmp.fontSize = 7;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.text = BossInfo.itemName(i);
-            tmp.faceColor = new Color32(label.GetComponent<TextMeshPro>().faceColor.r, label.GetComponent<TextMeshPro>().faceColor.g, label.GetComponent<TextMeshPro>().faceColor.b, 0);
+
+            TextMeshPro textMeshPro2 = label.GetComponent<TextMeshPro>();
+            if( textMeshPro2 != null)
+                tmp.faceColor = new Color32(textMeshPro2.faceColor.r, textMeshPro2.faceColor.g, textMeshPro2.faceColor.b, 0);
 
             ItemTextFader itf = go.AddComponent<ItemTextFader>();
-            itf.tmp = tmp;
-            itf.id = i;
+            if (itf != null)
+            {
+                itf.tmp = tmp;
+                itf.id = i;
+            }
 
         }
 
         public void onCollider(GameObject go)
         {
+
+            if (go?.transform?.parent?.gameObject == null)
+                return;
+
+            if (gm?.sceneName == null)
+                return;
+
 
             //ModHooks.ModLog(go.transform.parent.gameObject.name);
             if (go.transform.parent.gameObject.name == "ITEM_0")
