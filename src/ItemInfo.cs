@@ -46,7 +46,7 @@ namespace BossRush
             }
 
             itemInfo.Add(new ItemInfo("MothwingCloak", "UI", "hasDash", 0, "INV_NAME_DASH", "INV_NAME_SHADOWDASH")); itemInfo.Add(new ItemInfo("MothwingCloak", "UI", "hasDash", 0, "INV_NAME_DASH", "INV_NAME_SHADOWDASH"));
-            itemInfo.Add(new ItemInfo("MonarchWings", "UI", "hasDoubleJump", 0, "INV_NAME_DOUBLEJUMP")); itemInfo.Add(new ItemInfo("MantisClaw", "UI", "hasWallJump", 0, "INV_NAME_WALLJUMP"));
+            itemInfo.Add(new ItemInfo("MonarchWings", "UI", "hasDoubleJump", 0, "INV_NAME_DOUBLEJUMP")); itemInfo.Add(new ItemInfo("MantisClaw", "UI", "hasWalljump", 0, "INV_NAME_WALLJUMP"));
             itemInfo.Add(new ItemInfo("Fireball", "UI", "fireballLevel", 1, "INV_NAME_SPELL_FIREBALL1", "INV_NAME_SPELL_FIREBALL2")); itemInfo.Add(new ItemInfo("Fireball", "UI", "fireballLevel", 1, "INV_NAME_SPELL_FIREBALL1", "INV_NAME_SPELL_FIREBALL2"));
             itemInfo.Add(new ItemInfo("Dive", "UI", "quakeLevel", 1, "INV_NAME_SPELL_QUAKE1", "INV_NAME_SPELL_QUAKE2")); itemInfo.Add(new ItemInfo("Dive", "UI", "quakeLevel", 1, "INV_NAME_SPELL_QUAKE1", "INV_NAME_SPELL_QUAKE2"));
             itemInfo.Add(new ItemInfo("Scream", "UI", "screamLevel", 1, "INV_NAME_SPELL_SCREAM1", "INV_NAME_SPELL_SCREAM2")); itemInfo.Add(new ItemInfo("Scream", "UI", "screamLevel", 1, "INV_NAME_SPELL_SCREAM1", "INV_NAME_SPELL_SCREAM2"));
