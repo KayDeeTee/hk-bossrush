@@ -84,7 +84,7 @@ namespace BossRush
         public static void Teleport(string scenename, Vector3 pos)
         {
 
-            PlayerData.instance.nailDamage = 65;
+            //PlayerData.instance.nailDamage = 65;
 
             if (hc == null)
             {
