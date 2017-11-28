@@ -40,15 +40,15 @@ namespace FsmUtils
 
             foreach (FsmState state in fsm.FsmStates)
             {
-                Modding.ModHooks.ModLog(state.Name);
+                Modding.ModHooks.Logger.LogDebug(state.Name);
                 //└
                 foreach (FsmStateAction action in state.Actions)
                 {
-                    Modding.ModHooks.ModLog("└" + action.GetType());
+                    Modding.ModHooks.Logger.LogDebug("└" + action.GetType());
                     FieldInfo[] propInfo = action.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     for (int i = 0; i < propInfo.Length; i++)
                     {
-                        Modding.ModHooks.ModLog(" └[" + i + "](" + propInfo[i].FieldType + ")" + propInfo[i].Name + " = " + propInfo[i].GetValue(action));
+                        Modding.ModHooks.Logger.LogDebug(" └[" + i + "](" + propInfo[i].FieldType + ")" + propInfo[i].Name + " = " + propInfo[i].GetValue(action));
                     }
                 }
 
@@ -66,7 +66,7 @@ namespace FsmUtils
                     FsmStateAction[] actions = fsm.FsmStates[i].Actions;
 
                     Array.Resize(ref actions, actions.Length + 1);
-                    Modding.ModHooks.ModLog("[FSM UTIL] " + actions[0].GetType().ToString());
+                    Modding.ModHooks.Logger.LogDebug("[FSM UTIL] " + actions[0].GetType().ToString());
 
                     actions.RemoveAt(index);
 
@@ -86,7 +86,7 @@ namespace FsmUtils
                     FsmStateAction[] actions = fsm.FsmStates[i].Actions;
 
                     Array.Resize(ref actions, actions.Length + 1);
-                    Modding.ModHooks.ModLog("[FSM UTIL] " + actions[index].GetType().ToString());
+                    Modding.ModHooks.Logger.LogDebug("[FSM UTIL] " + actions[index].GetType().ToString());
 
                     return actions[index];
                 }
@@ -145,7 +145,7 @@ namespace FsmUtils
                         }
                         else
                         {
-                            Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Removing {0} transition from {1}", trans.ToState, fsm.FsmStates[i].Name));
+                            Modding.ModHooks.Logger.LogDebug(string.Format("[FSM UTIL] Removing {0} transition from {1}", trans.ToState, fsm.FsmStates[i].Name));
                         }
                     }
                     fsm.FsmStates[i].Transitions = transList.ToArray();
@@ -221,22 +221,22 @@ namespace FsmUtils
 
         public static void ReplaceStringVariable(PlayMakerFSM fsm, string state, string src, string dst)
         {
-            Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Replacing FSM Strings"));
+            Modding.ModHooks.Logger.LogDebug(string.Format("[FSM UTIL] Replacing FSM Strings"));
             for (int i = 0; i < fsm.FsmStates.Length; i++)
             {
                 bool found = false;
                 if (fsm.FsmStates[i].Name == state || state == "")
                 {
-                    Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Found FsmState with name \"{0}\" ", fsm.FsmStates[i].Name));
+                    Modding.ModHooks.Logger.LogDebug(string.Format("[FSM UTIL] Found FsmState with name \"{0}\" ", fsm.FsmStates[i].Name));
                     foreach (FsmString str in (List<FsmString>)fsmStringParamsField.GetValue(fsm.FsmStates[i].ActionData))
                     {
                         List<FsmString> val = new List<FsmString>();
-                        Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Found FsmString with value \"{0}\" ", str));
+                        Modding.ModHooks.Logger.LogDebug(string.Format("[FSM UTIL] Found FsmString with value \"{0}\" ", str));
                         if (str.Value.Contains(src))
                         {
                             val.Add(dst);
                             found = true;
-                            Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Found FsmString with value \"{0}\", changing to \"{1}\" ", str, dst));
+                            Modding.ModHooks.Logger.LogDebug(string.Format("[FSM UTIL] Found FsmString with value \"{0}\", changing to \"{1}\" ", str, dst));
                         }
                         else
                         {

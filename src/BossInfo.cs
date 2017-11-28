@@ -166,7 +166,7 @@ namespace BossRush
                         if (BossInfo.SpawnAll())
                             BossRushUpdate.spawnedItems = true;
                         else
-                            Modding.ModHooks.ModLog("Couldn't spawn HK items");
+                            Modding.ModHooks.Logger.LogError("Couldn't spawn HK items");
                 }
                 return killedHK;
             }

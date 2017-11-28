@@ -22,6 +22,8 @@ namespace BossRush
             return Assembly.GetExecutingAssembly().GetName().Version.ToString(); 
         }
 
+        public static GameObject invObj;
+
         public static Dictionary<string, BossInfo> bossInfo;
 
         //public static Texture2D bgTex;
@@ -208,6 +210,11 @@ namespace BossRush
             gm.LoadScene(scenename);
         }
 
+        public static void intTest(int x)
+        {
+            Modding.ModHooks.Logger.Log(x.ToString());
+        }
+
         public override void Initialize()
         {
             ModHooks.Logger.Log("Initializing BossRush");
@@ -223,11 +230,22 @@ namespace BossRush
             uib = UIManager.instance.uiButtonSkins;
             ih = GameManager.instance.inputHandler;
 
-            canvas = CanvasUtil.createCanvas(1920,1080);
+            invObj = new GameObject();
+            invObj.AddComponent<Rewards>();
 
-            textSkip = CanvasUtil.createTextPanel(canvas, "Press to skip without picking up items", 960, 30, 1920, 50, 24).GetComponent<Text>();
-            imageSkip = CanvasUtil.createImagePanel(canvas, 960, 90, 58, 58).GetComponent<Image>();
-            imageText = CanvasUtil.createTextPanel(canvas, "", 960, 90, 58, 58, 24).GetComponent<Text>();
+            canvas = CanvasUtil.createCanvas(RenderMode.ScreenSpaceOverlay, new Vector2(1920, 1080));
+
+            //GameObject button2 = CanvasUtil.createButton(canvas, intTest, 0, CanvasUtil.createSprite(ResourceLoader.loadSelect(), 0, 0, 228, 193), "0", 24, TextAnchor.MiddleCenter, new CanvasUtil.RectData(new Vector2(200, 100), new Vector2(0, 0)));
+
+            textSkip = CanvasUtil.createTextPanel(canvas, "Press to skip without picking up items", 24, TextAnchor.MiddleCenter, new CanvasUtil.RectData(new Vector2(0, 50), new Vector2(0, 25), new Vector2(1, 0), new Vector2(0, 0), new Vector2(0.5f, 0.5f)), true).GetComponent<Text>();
+            //textSkip = CanvasUtil.createTextPanel(canvas, "Press to skip without picking up items", 960, 30, 1920, 50, 24).GetComponent<Text>();
+
+            imageSkip = CanvasUtil.createImagePanel(canvas, new Sprite(), new CanvasUtil.RectData(new Vector2(58, 58), new Vector2(0, 90), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0.5f))).GetComponent<Image>();
+            imageText = CanvasUtil.createTextPanel(canvas, "", 24, TextAnchor.MiddleCenter, new CanvasUtil.RectData(new Vector2(58, 58), new Vector2(0, 90), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0.5f)), true).GetComponent<Text>();
+
+
+            //imageSkip = CanvasUtil.createImagePanel(canvas, 960, 90, 58, 58).GetComponent<Image>();
+            //imageText = CanvasUtil.createTextPanel(canvas, "", 960, 90, 58, 58, 24).GetComponent<Text>();
             rectSkip = imageSkip.gameObject.GetComponent<RectTransform>();
 
             FadeOutSkip(0);
@@ -239,16 +257,21 @@ namespace BossRush
             bossFace3 = new Sprite[9];
             bossText = new UnityEngine.UI.Text[9];
 
-            bgImg = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadBackground(), 960, 540, 1920,1080, 0, 0, 1280, 720).GetComponent<Image>();
-            bossSelectImg = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadBossSelect(), 960, 540, 1920, 1080, 0, 0, 1920, 1080).GetComponent<Image>();
-            selectPos = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadSelect(), 960, 540, 229, 193, 0, 0, 228, 193).GetComponent<RectTransform>();
+            bgImg = CanvasUtil.createImagePanel(canvas, CanvasUtil.createSprite(ResourceLoader.loadBackground(), 0, 0, 1280, 720), new CanvasUtil.RectData(new Vector2(1920, 1080), new Vector2(0, 0))).GetComponent<Image>();
+            bossSelectImg = CanvasUtil.createImagePanel(canvas, CanvasUtil.createSprite(ResourceLoader.loadBossSelect(), 0, 0, 1920, 1080), new CanvasUtil.RectData(new Vector2(1920, 1080), new Vector2(0, 0))).GetComponent<Image>();
+            selectPos = CanvasUtil.createImagePanel(canvas, CanvasUtil.createSprite(ResourceLoader.loadSelect(), 0, 0, 228, 193), new CanvasUtil.RectData(new Vector2(229, 193), new Vector2(0, 0))).GetComponent<RectTransform>();
+            //bgImg = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadBackground(), 960, 540, 1920,1080, 0, 0, 1280, 720).GetComponent<Image>();
+            //bossSelectImg = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadBossSelect(), 960, 540, 1920, 1080, 0, 0, 1920, 1080).GetComponent<Image>();
+            //selectPos = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadSelect(), 960, 540, 229, 193, 0, 0, 228, 193).GetComponent<RectTransform>();
 
             for (int i = 0; i < bossFaces.Length; i++)
             {
                 int x = (i%3);
                 int y = i / 3;
-                bossFaces[i] = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadBossFaces1(), (233 * x) + 727, (232 * y) + 325, 211, 176, (x * 211) + 1, (y * 177) + 1, 207, 174).GetComponent<UnityEngine.UI.Image>();
-                bossText[i] = CanvasUtil.createTextPanel(canvas, (233 * x) + 727, (232 * y) + 217, 211, 30).GetComponent<UnityEngine.UI.Text>();
+                bossFaces[i] = CanvasUtil.createImagePanel(canvas, CanvasUtil.createSprite(ResourceLoader.loadBossFaces1(), (x * 211) + 1, (y * 177) + 1, 207, 174), new CanvasUtil.RectData(new Vector2(211, 176), new Vector2((233 * x) + 727, (232 * y) + 325), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0.5f, 0.5f))).GetComponent<Image>();
+                bossText[i] = CanvasUtil.createTextPanel(canvas, "", 30, TextAnchor.MiddleCenter, new CanvasUtil.RectData(new Vector2(211, 30), new Vector2((233 * x) + 727, (232 * y) + 217), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0.5f, 0.5f)), true).GetComponent<Text>();
+                //bossFaces[i] = CanvasUtil.createImagePanel(canvas, ResourceLoader.loadBossFaces1(), (233 * x) + 727, (232 * y) + 325, 211, 176, (x * 211) + 1, (y * 177) + 1, 207, 174).GetComponent<UnityEngine.UI.Image>();
+                //bossText[i] = CanvasUtil.createTextPanel(canvas, (233 * x) + 727, (232 * y) + 217, 211, 30).GetComponent<UnityEngine.UI.Text>();
             }
             for (int i = 0; i < bossFaces.Length; i++)
             {
@@ -327,7 +350,6 @@ namespace BossRush
 
         public void onSceneLoad(Scene dst, LoadSceneMode lsm)
         {
-
             if (gm == null)
             {
                 gm = GameManager.instance;
@@ -442,10 +464,10 @@ namespace BossRush
 
         public void dataDump(GameObject go, int depth)
         {
-            ModHooks.ModLog(new String('-', depth) + go.name);
+            Modding.ModHooks.Logger.LogDebug(new String('-', depth) + go.name);
             foreach (Component comp in go.GetComponents<Component>())
             {
-                ModHooks.ModLog(new String('_', depth) + comp.GetType().ToString());
+                Modding.ModHooks.Logger.LogDebug(new String('_', depth) + comp.GetType().ToString());
             }
             foreach (Transform child in go.transform)
             {
@@ -455,19 +477,19 @@ namespace BossRush
 
         public void createLabel(GameObject go, int i)
         {
-            if (go?.transform == null)
+            if (go.transform == null)
                 return;
             
             GameObject label = new GameObject("Label");
 
             Transform child = go.transform.FindChild("Arrow Prompt(Clone)/Labels/Inspect");
 
-            if (child?.gameObject == null)
+            if (child.gameObject == null)
                 return;
 
             GameObject oldLabel = child.gameObject;
 
-            if (oldLabel?.transform?.parent?.parent?.parent == null)
+            if (oldLabel.transform.parent.parent.parent == null)
                 return;
 
 
@@ -508,7 +530,7 @@ namespace BossRush
             label.AddComponent(changeFontByLanguage);
 
 
-            if (label.transform?.localPosition == null)
+            if (label.transform.localPosition == null)
                 return;
 
             label.transform.parent = oldLabel.transform.parent.parent.parent;
@@ -556,27 +578,12 @@ namespace BossRush
         public void onCollider(GameObject go)
         {
 
-            if (go?.transform?.parent?.gameObject == null)
+            if (go.transform.parent.gameObject == null)
                 return;
 
-            if (gm?.sceneName == null)
+            if (gm.sceneName == null)
                 return;
 
-
-            //ModHooks.ModLog(go.transform.parent.gameObject.name);
-            if (go.transform.parent.gameObject.name == "ITEM_0")
-            {
-                createLabel(go, 0);
-            }
-            
-            if (go.transform.parent.gameObject.name == "ITEM_1")
-            {
-                createLabel(go, 1);
-            }
-            if (go.transform.parent.gameObject.name.Contains("ITEM_2"))
-            {
-                createLabel(go, 2);
-            }
             if (gm.sceneName == "Crossroads_10")
             {
                 PlayMakerFSM hme = FSMUtility.LocateFSM(go, "health_manager_enemy");
@@ -588,13 +595,27 @@ namespace BossRush
                     }
                 }
             }
-            if (shinySlot3 == null)
+
+            //ModHooks.ModLog(go.transform.parent.gameObject.name);
+            /*if (go.transform.parent.gameObject.name == "ITEM_0")
+            {
+                createLabel(go, 0);
+            }
+            
+            if (go.transform.parent.gameObject.name == "ITEM_1")
+            {
+                createLabel(go, 1);
+            }
+            if (go.transform.parent.gameObject.name.Contains("ITEM_2"))
+            {
+                createLabel(go, 2);
+            }*/
+            /*if (shinySlot3 == null)
             {
                 if (go.name == "Inspect Region")
                 {
                     //dataDump(go.transform.parent.gameObject, 1);
-
-                    FsmUtils.FsmUtil.LogFSM(go.GetComponent<PlayMakerFSM>());
+                    //FsmUtils.FsmUtil.LogFSM(go.GetComponent<PlayMakerFSM>());
 
                     shinySlot1 = UnityEngine.GameObject.Instantiate(go.transform.parent.gameObject);
                     shinySlot1.name = "ITEM_0";
@@ -622,7 +643,7 @@ namespace BossRush
                     if (dash_check.FsmVariables.GetFsmBool("Dash Cloak").Value)
                         UnityEngine.GameObject.Destroy(go.transform.parent.gameObject);
                 }
-            }
+            }*/
         }
 
     }
